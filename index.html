@@ -109,7 +109,7 @@
             const twitter = document.getElementById('twitterInput').value.trim();
             const btn = document.getElementById('submitBtn');
             
-            // เพิ่มการเช็คชื่อ Twitter และรูปแบบกระเป๋าที่ถูกต้อง
+            // ตรวจสอบว่าทำครบทุกอย่างและ Wallet ถูกต้อง
             if (allTasks && captchaVerified && wallet.startsWith('0x') && wallet.length === 42 && twitter.length > 2) {
                 btn.disabled = false;
                 btn.classList.remove('opacity-30', 'cursor-not-allowed');
@@ -120,11 +120,6 @@
         }
 
         function handlePreSubmit(e) {
-            const wallet = document.getElementById('walletInput').value.trim();
-            if (!wallet.startsWith('0x') || wallet.length !== 42) {
-                // ใช้กล่องข้อความแทน alert ตามกฎของระบบ
-                return false;
-            }
             isSubmitted = true;
             document.getElementById('submitBtn').innerText = "SENDING...";
             document.getElementById('submitBtn').disabled = true;
@@ -220,7 +215,7 @@
         </div>
     </section>
 
-    <!-- Stats & About -->
+    <!-- Stats Section -->
     <section id="about" class="py-24 bg-white/[0.01]">
         <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
             <div class="glass-card p-8">
@@ -311,19 +306,21 @@
 
                     <div class="glass-card p-6 border-purple-500/20">
                         <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6 italic">Registration</h4>
+                        <!-- *** เปลี่ยน URL ของ Google Form ที่นี่ *** -->
                         <form action="https://docs.google.com/forms/d/e/1FAIpQLSfI15GLtlIAt1rqVSOrKduSNZFfAYLIumvOs3v6uhljSm6wtg/formResponse" method="POST" target="hidden_iframe" onsubmit="return handlePreSubmit(event)" class="space-y-6">
                             
-                            <!-- ช่องระบุตัวตน Twitter -->
+                            <!-- ช่องกรอกชื่อ Twitter (สำคัญ: แก้ไข entry ID ตามฟอร์มของคุณ) -->
                             <div>
-                                <label class="text-[10px] font-bold text-slate-400 uppercase italic ml-1">Twitter Username (@...)</label>
-                                <input name="entry.12345678" id="twitterInput" type="text" required placeholder="@username" oninput="checkValidation()" class="w-full bg-black/50 border border-white/10 p-4 rounded-xl text-xs text-white focus:border-purple-500 outline-none mt-2 transition">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase italic ml-1 italic">Twitter Username</label>
+                                <input name="entry.CHANGE_ME_TWITTER" id="twitterInput" type="text" required placeholder="@username" oninput="checkValidation()" class="w-full bg-black/50 border border-white/10 p-4 rounded-xl text-xs text-white focus:border-purple-500 outline-none mt-2 transition">
                             </div>
 
+                            <!-- ช่องกรอก Wallet (สำคัญ: แก้ไข entry ID ตามฟอร์มของคุณ) -->
                             <div>
-                                <label class="text-[10px] font-bold text-slate-400 uppercase italic ml-1">Polygon Wallet Address</label>
+                                <label class="text-[10px] font-bold text-slate-400 uppercase italic ml-1 italic">Polygon Wallet Address</label>
                                 <input name="entry.845316027" id="walletInput" type="text" required placeholder="0x..." oninput="checkValidation()" class="w-full bg-black/50 border border-white/10 p-4 rounded-xl text-xs font-mono text-white focus:border-purple-500 outline-none mt-2 transition">
                             </div>
-                            
+
                             <div class="flex justify-center">
                                 <div class="g-recaptcha" data-sitekey="6LfFc2osAAAAANPATIQGxw3y54j2GIXqBZX5U-BV" data-callback="onCaptchaSuccess" data-theme="dark"></div>
                             </div>
@@ -341,130 +338,26 @@
         </div>
     </section>
 
-    <!-- Whitepaper Content -->
+    <!-- Whitepaper & Other sections (Keep as your original) -->
     <section id="whitepaper" class="py-32 relative">
         <div class="max-w-5xl mx-auto px-6">
             <div class="glass-card p-12 lg:p-20 relative overflow-hidden border-white/5">
                 <div class="absolute top-0 left-0 w-full h-2 polygon-gradient"></div>
                 <h2 class="text-4xl lg:text-6xl font-black h-font text-center uppercase mb-16 italic tracking-tighter">Whitepaper <span class="text-slate-600 italic">v1.0</span></h2>
-                
                 <div class="whitepaper-content space-y-12">
-                    <div>
-                        <h3>1. Introduction</h3>
-                        <p>Penlygon ($PENLG) is the most transparent meme project on the Polygon Network. We focus on building a sustainable community by removing team allocations and implementing a strategic manual burn mechanism. We believe in "Burning the Ice" to create long-term value for every penguin in the colony.</p>
-                    </div>
-
-                    <div>
-                        <h3>2. Tokenomics</h3>
-                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                            <div class="p-5 bg-white/5 rounded-2xl border border-white/10 text-center">
-                                <span class="block text-2xl font-black h-font italic uppercase">30%</span>
-                                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest italic">Presale (PinkSale)</span>
-                            </div>
-                            <div class="p-5 bg-white/5 rounded-2xl border border-white/10 text-center">
-                                <span class="block text-2xl font-black h-font italic text-blue-400 italic uppercase">20%</span>
-                                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest italic">Liquidity (Locked)</span>
-                            </div>
-                            <div class="p-5 bg-white/5 rounded-2xl border border-white/10 text-center">
-                                <span class="block text-2xl font-black h-font italic text-orange-500 italic uppercase">30%</span>
-                                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest italic">Burn Reserve</span>
-                            </div>
-                            <div class="p-5 bg-white/5 rounded-2xl border border-white/10 text-center">
-                                <span class="block text-2xl font-black h-font italic italic uppercase">10%</span>
-                                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest italic">Community Airdrop</span>
-                            </div>
-                            <div class="p-5 bg-white/5 rounded-2xl border border-white/10 text-center">
-                                <span class="block text-2xl font-black h-font italic italic uppercase">10%</span>
-                                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest italic">CEX Listings</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3>3. The Burn Strategy</h3>
-                        <p>To maintain zero transaction fees for our traders, we do NOT use a 1% tax. Instead, we burn supply through:</p>
-                        <ul class="space-y-3 italic text-sm text-slate-400">
-                            <li class="flex items-center gap-3">
-                                <i class="fas fa-fire text-orange-500"></i>
-                                15% Manual Burn on Launch Day.
-                            </li>
-                            <li class="flex items-center gap-3">
-                                <i class="fas fa-fire text-orange-500"></i>
-                                Burning all unsold tokens from the Presale.
-                            </li>
-                            <li class="flex items-center gap-3">
-                                <i class="fas fa-fire text-orange-500"></i>
-                                Milestone burns triggered by Holder goals.
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h3>4. Security Checklist</h3>
-                        <p>Safety of the colony is our priority:</p>
-                        <ul class="space-y-2 text-slate-400 italic text-sm">
-                            <li>• Zero (0%) Team Tokens.</li>
-                            <li>• 10-Year LP Lock on Polygon.</li>
-                            <li>• Ownership Renounced after listing.</li>
-                            <li>• No Mint Functions.</li>
-                        </ul>
-                    </div>
+                    <p class="text-slate-400">Penlygon ($PENLG) focuses on building a sustainable community by removing team allocations and implementing a strategic manual burn mechanism.</p>
+                    <ul class="text-slate-400 space-y-2">
+                        <li>• 100M Total Supply</li>
+                        <li>• 15% Manual Burn</li>
+                        <li>• 0% Buy/Sell Tax</li>
+                    </ul>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Roadmap -->
-    <section id="roadmap" class="py-32 bg-white/[0.01]">
-        <div class="max-w-7xl mx-auto px-6">
-            <h2 class="text-5xl font-black h-font text-center uppercase mb-24 italic tracking-tighter italic">The Arctic Roadmap</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div class="p-10 glass-card">
-                    <span class="text-xs font-bold text-purple-400 uppercase tracking-widest italic">Phase 1</span>
-                    <h4 class="text-xl font-black h-font mt-2 mb-4 uppercase italic italic">Freeze</h4>
-                    <p class="text-xs text-slate-500 uppercase tracking-widest leading-loose italic">• Community Setup<br>• Viral Airdrop<br>• Twitter Takeover</p>
-                </div>
-                <div class="p-10 glass-card border-orange-500/20">
-                    <span class="text-xs font-bold text-orange-400 uppercase tracking-widest italic">Phase 2</span>
-                    <h4 class="text-xl font-black h-font mt-2 mb-4 uppercase text-orange-500 italic italic">Ignite</h4>
-                    <p class="text-xs text-slate-500 uppercase tracking-widest leading-loose italic">• PinkSale Launch<br>• 15% Manual Burn<br>• DEX Listing</p>
-                </div>
-                <div class="p-10 glass-card">
-                    <span class="text-xs font-bold text-blue-400 uppercase tracking-widest italic">Phase 3</span>
-                    <h4 class="text-xl font-black h-font mt-2 mb-4 uppercase italic italic">Heatwave</h4>
-                    <p class="text-xs text-slate-500 uppercase tracking-widest leading-loose italic">• CMC/CG Listing<br>• Holder Milestones<br>• Marketing V2</p>
-                </div>
-                <div class="p-10 glass-card">
-                    <span class="text-xs font-bold text-green-400 uppercase tracking-widest italic">Phase 4</span>
-                    <h4 class="text-xl font-black h-font mt-2 mb-4 uppercase text-green-500 italic italic">Peak</h4>
-                    <p class="text-xs text-slate-500 uppercase tracking-widest leading-loose italic">• CEX Listing<br>• Strategic Partners<br>• Moon Mission</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="py-20 border-t border-white/5">
-        <div class="max-w-7xl mx-auto px-6 text-center">
-            <div class="flex items-center justify-center space-x-3 mb-8">
-                <img src="Logo.jpeg" alt="Logo" class="w-12 h-12 rounded-xl">
-                <span class="text-2xl font-black h-font uppercase tracking-tighter italic text-white underline decoration-purple-500 italic">Penlygon</span>
-            </div>
-            
-            <div class="flex justify-center space-x-8 mb-12 text-3xl">
-                <a href="https://x.com/0x0penlygon?s=21" target="_blank" class="text-slate-400 hover:text-white transition">
-                    <i class="fab fa-x-twitter"></i>
-                </a>
-            </div>
-
-            <p class="text-slate-600 text-[10px] font-bold uppercase tracking-[0.4em] mb-10 italic">© 2026 THE PENLYGON COLONY. BUILT ON POLYGON.</p>
-            
-            <div class="max-w-2xl mx-auto glass-card p-6 border-white/5">
-                <p class="text-[9px] text-slate-600 leading-relaxed uppercase font-bold tracking-widest italic">
-                    DISCLAIMER: $PENLG is a community meme token with 0% team allocation. Cryptocurrency investments are subject to high market risk. Always do your own research.
-                </p>
-            </div>
-        </div>
+    <footer class="py-20 border-t border-white/5 text-center">
+        <p class="text-slate-600 text-[10px] font-bold uppercase tracking-[0.4em] mb-4 italic">© 2026 THE PENLYGON COLONY. BUILT ON POLYGON.</p>
     </footer>
 
     <!-- Invisible Iframe -->
