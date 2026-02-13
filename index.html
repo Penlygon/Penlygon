@@ -6,6 +6,9 @@
     <title>Penlygon ($PENLG) | Official Website</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google reCAPTCHA -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Space+Grotesk:wght@300;500;700&display=swap');
         
@@ -55,37 +58,87 @@
             box-shadow: 0 0 60px rgba(130, 71, 229, 0.2);
         }
 
-        .milestone-node {
-            border-left: 2px dashed rgba(255, 255, 255, 0.1);
-            position: relative;
-            padding-left: 2rem;
-            padding-bottom: 2rem;
-        }
-
-        .milestone-node::before {
-            content: '❄️';
-            position: absolute;
-            left: -14px;
-            top: 0;
-            background: #0b0f1a;
-            padding: 2px;
-        }
-
-        .milestone-active::before {
-            content: '🔥';
-        }
-
-        .banner-mask {
-            mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
-        }
-
         .whitepaper-content h3 {
-            @apply text-xl font-bold text-purple-400 mt-6 mb-3 uppercase tracking-wide;
+            @apply text-xl font-bold text-purple-400 mt-6 mb-3 uppercase tracking-wide italic;
         }
         .whitepaper-content p {
             @apply text-slate-400 leading-relaxed mb-4;
         }
+
+        .hidden-state { display: none; }
+        .animate-fade { animation: fadeIn 0.5s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
+
+    <script>
+        // AIRDROP LOGIC
+        let tasksDone = { follow: false, like: false, retweet: false, reply: false };
+        let captchaVerified = false;
+        let isSubmitted = false;
+
+        function startAirdropFlow() {
+            document.getElementById('airdrop-intro').classList.add('hidden-state');
+            document.getElementById('airdrop-rules').classList.remove('hidden-state');
+        }
+
+        function acceptRules() {
+            document.getElementById('airdrop-rules').classList.add('hidden-state');
+            document.getElementById('airdrop-main').classList.remove('hidden-state');
+        }
+
+        function markTask(btn, key, url) {
+            window.open(url, '_blank');
+            if (!tasksDone[key]) {
+                tasksDone[key] = true;
+                const label = btn.querySelector('.status-label');
+                label.innerText = 'VERIFIED';
+                label.className = "status-label text-[9px] font-black text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-lg";
+                btn.classList.add('border-emerald-500/30', 'bg-emerald-500/5');
+                checkValidation();
+            }
+        }
+
+        function onCaptchaSuccess(token) {
+            captchaVerified = true;
+            checkValidation();
+        }
+
+        function checkValidation() {
+            const allTasks = Object.values(tasksDone).every(v => v);
+            const btn = document.getElementById('submitBtn');
+            if (allTasks && captchaVerified) {
+                btn.disabled = false;
+                btn.classList.remove('opacity-30', 'cursor-not-allowed');
+            }
+        }
+
+        function handlePreSubmit(e) {
+            const wallet = document.getElementById('walletInput').value.trim();
+            if (!wallet.startsWith('0x') || wallet.length !== 42) {
+                alert("Please enter a valid Polygon (EVM) Wallet Address.");
+                return false;
+            }
+            isSubmitted = true;
+            document.getElementById('submitBtn').innerText = "SENDING...";
+            document.getElementById('submitBtn').disabled = true;
+            return true;
+        }
+
+        function showFinalSuccess() {
+            if(isSubmitted) {
+                document.getElementById('airdrop-main').classList.add('hidden-state');
+                document.getElementById('airdrop-success').classList.remove('hidden-state');
+            }
+        }
+
+        function copyContract() {
+            const addr = "0xC7123D0743A284560167de8678b24F2124EF8649";
+            navigator.clipboard.writeText(addr);
+            const btnIcon = document.getElementById('copyIcon');
+            btnIcon.classList.replace('fa-copy', 'fa-check');
+            setTimeout(() => btnIcon.classList.replace('fa-check', 'fa-copy'), 2000);
+        }
+    </script>
 </head>
 <body class="overflow-x-hidden">
 
@@ -94,11 +147,11 @@
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <img src="Logo.jpeg" alt="Penlygon Logo" class="w-10 h-10 rounded-xl">
-                <span class="text-2xl font-extrabold tracking-tight h-font uppercase tracking-tighter italic">Penlygon</span>
+                <span class="text-2xl font-extrabold h-font uppercase italic tracking-tighter">Penlygon</span>
             </div>
             <div class="hidden lg:flex space-x-8 text-xs font-semibold uppercase tracking-widest text-slate-300">
                 <a href="#about" class="hover:text-white transition">About</a>
-                <a href="#tokenomics" class="hover:text-white transition">Tokenomics</a>
+                <a href="#airdrop-portal" class="text-purple-400 hover:text-white transition font-bold">Airdrop</a>
                 <a href="#whitepaper" class="hover:text-white transition">Whitepaper</a>
                 <a href="#roadmap" class="hover:text-white transition">Roadmap</a>
             </div>
@@ -106,7 +159,7 @@
                 <a href="https://x.com/0x0penlygon?s=21" target="_blank" class="text-xl text-slate-400 hover:text-white transition">
                     <i class="fab fa-x-twitter"></i>
                 </a>
-                <a href="#" class="polygon-gradient px-6 py-2.5 rounded-2xl font-bold text-sm hover:brightness-110 transition uppercase tracking-wider">
+                <a href="#buy" class="polygon-gradient px-6 py-2.5 rounded-2xl font-bold text-sm hover:brightness-110 transition uppercase tracking-wider">
                     Buy $PENLG
                 </a>
             </div>
@@ -115,42 +168,37 @@
 
     <!-- Hero Section -->
     <section class="relative min-h-screen flex items-center pt-28 px-6">
-        <div class="absolute inset-0 z-0 pointer-events-none">
-            <div class="absolute top-1/4 left-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px]"></div>
-        </div>
-
         <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center relative z-10">
             <div>
                 <div class="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-[0.3em] mb-8">
                     <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    <span class="text-slate-300 italic">Fair Launching: February 20th</span>
+                    <span class="text-slate-300 italic uppercase">Fair Launching: February 20th</span>
                 </div>
                 <h1 class="text-6xl lg:text-8xl font-black h-font leading-[0.9] mb-8 uppercase">
                     The Coldest <br><span class="fire-text">Burn</span> <br>on Polygon.
                 </h1>
                 
-                <!-- Contract Address Area -->
                 <div class="glass-card p-4 mb-10 flex items-center justify-between border-purple-500/20 max-w-md">
                     <div class="overflow-hidden">
-                        <p class="text-[10px] uppercase font-bold text-purple-400 mb-1 tracking-widest">Contract Address (CA)</p>
-                        <p id="contractAddr" class="text-xs text-slate-400 font-mono truncate">0xC7123D0743A284560167de8678b24F2124EF8649</p>
+                        <p class="text-[10px] uppercase font-bold text-purple-400 mb-1 tracking-widest italic">Contract Address (CA)</p>
+                        <p class="text-xs text-slate-400 font-mono truncate">0xC7123D0743A284560167de8678b24F2124EF8649</p>
                     </div>
                     <button onclick="copyContract()" class="bg-white/5 hover:bg-white/10 p-3 rounded-xl transition">
-                        <i class="far fa-copy text-purple-400"></i>
+                        <i id="copyIcon" class="far fa-copy text-purple-400"></i>
                     </button>
                 </div>
 
                 <div class="flex flex-wrap gap-4">
-                    <a href="#whitepaper" class="polygon-gradient px-10 py-5 rounded-2xl font-extrabold text-lg uppercase tracking-wide shadow-xl shadow-purple-500/20 text-center">
-                        Whitepaper
+                    <a href="#airdrop-portal" class="polygon-gradient px-10 py-5 rounded-2xl font-extrabold text-lg uppercase tracking-wide shadow-xl shadow-purple-500/20 text-center">
+                        Join Airdrop
                     </a>
-                    <a href="https://x.com/0x0penlygon?s=21" target="_blank" class="bg-white/5 border border-white/10 px-10 py-5 rounded-2xl font-extrabold text-lg hover:bg-white/10 transition uppercase tracking-wide flex items-center gap-3">
-                        <i class="fab fa-x-twitter"></i> Follow X
+                    <a href="#whitepaper" class="bg-white/5 border border-white/10 px-10 py-5 rounded-2xl font-extrabold text-lg hover:bg-white/10 transition uppercase tracking-wide flex items-center gap-3">
+                        Whitepaper
                     </a>
                 </div>
             </div>
             <div class="relative penguin-float">
-                <img src="Banner.jpeg" alt="Penlygon Banner" class="w-full rounded-[40px] shadow-2xl glow-effect border border-white/10 banner-mask">
+                <img src="Banner.jpeg" alt="Penlygon Banner" class="w-full rounded-[40px] shadow-2xl glow-effect border border-white/10">
                 <div class="absolute -bottom-8 right-0 md:-right-8 w-full max-w-[280px] glass-card p-6 glow-effect border-orange-500/30">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-[10px] font-bold text-orange-500 uppercase italic">Initial Burn</span>
@@ -158,19 +206,19 @@
                     </div>
                     <div class="flex items-end justify-between">
                         <p class="text-3xl font-black h-font">15%</p>
-                        <p class="text-orange-500 font-bold text-xs mb-1 uppercase tracking-tighter">Of Total Supply</p>
+                        <p class="text-orange-500 font-bold text-xs mb-1 uppercase tracking-tighter italic">Of Total Supply</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Information Card -->
+    <!-- Stats & About -->
     <section id="about" class="py-24 bg-white/[0.01]">
         <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
             <div class="glass-card p-8">
                 <p class="text-slate-500 text-xs font-bold uppercase mb-2 tracking-widest italic">Total Supply</p>
-                <h3 class="text-3xl font-black h-font uppercase tracking-tight">100,000,000</h3>
+                <h3 class="text-3xl font-black h-font uppercase tracking-tight italic">100,000,000</h3>
             </div>
             <div class="glass-card p-8 border-orange-500/20">
                 <p class="text-slate-500 text-xs font-bold uppercase mb-2 tracking-widest italic">Manual Burn</p>
@@ -182,63 +230,155 @@
             </div>
             <div class="glass-card p-8">
                 <p class="text-slate-500 text-xs font-bold uppercase mb-2 tracking-widest italic">Buy/Sell Tax</p>
-                <h3 class="text-3xl font-black h-font text-purple-500">0% TAX</h3>
+                <h3 class="text-3xl font-black h-font text-purple-500 italic">0% TAX</h3>
             </div>
         </div>
     </section>
 
-    <!-- Whitepaper Section -->
+    <!-- AIRDROP PORTAL -->
+    <section id="airdrop-portal" class="py-24 relative overflow-hidden">
+        <div class="max-w-4xl mx-auto px-6 relative z-10">
+            <div class="text-center mb-12">
+                <h2 class="text-5xl font-black h-font uppercase italic tracking-tighter">Airdrop <span class="text-purple-500">Missions</span></h2>
+                <p class="text-slate-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-4 italic">Complete all steps to qualify</p>
+            </div>
+
+            <!-- Intro State -->
+            <div id="airdrop-intro" class="glass-card p-12 text-center border-purple-500/30 animate-fade">
+                <div class="w-20 h-20 bg-purple-600/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-purple-500/20">
+                    <i class="fas fa-parachute-box text-3xl text-purple-400"></i>
+                </div>
+                <h3 class="text-2xl font-black h-font uppercase italic mb-4">Colony Enrollment</h3>
+                <p class="text-slate-400 text-xs mb-8 leading-relaxed max-w-md mx-auto italic">Early contributors are eligible for the $PENLG community drop. Start the protocol to verify your social presence.</p>
+                <button onclick="startAirdropFlow()" class="bg-white text-black px-12 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-slate-200 transition">Start Mission</button>
+            </div>
+
+            <!-- Rules State -->
+            <div id="airdrop-rules" class="hidden-state glass-card p-10 border-red-500/20 animate-fade">
+                <h3 class="text-xl font-black h-font uppercase italic text-center mb-8">Protocol Compliance</h3>
+                <div class="space-y-6 bg-black/40 p-6 rounded-2xl border border-white/5 mb-8 text-[11px] text-slate-400 leading-relaxed max-h-72 overflow-y-auto italic">
+                    <div>
+                        <strong class="text-rose-400 block uppercase tracking-widest mb-1 italic">1. Jurisdictional Restriction</strong>
+                        Participation is strictly prohibited for individuals in restricted regions. You confirm that your participation complies with local laws.
+                    </div>
+                    <div>
+                        <strong class="text-amber-400 block uppercase tracking-widest mb-1 italic">2. Wallet Responsibility</strong>
+                        You are the sole custodian of your assets. Penlygon is not liable for any losses or compromised wallets.
+                    </div>
+                    <div>
+                        <strong class="text-purple-400 block uppercase tracking-widest mb-1 italic">3. Anti-Fraud & Sybil Policy</strong>
+                        We audit entries. Any attempt to use bots or multiple accounts will result in a permanent blacklist.
+                    </div>
+                    <div>
+                        <strong class="text-white block uppercase tracking-widest mb-1 italic">4. Accurate Data Submission</strong>
+                        Wallet addresses cannot be changed after submission. Ensure you provide a valid Polygon (EVM) address.
+                    </div>
+                </div>
+                <button onclick="acceptRules()" class="w-full polygon-gradient py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition">I Agree & Continue</button>
+            </div>
+
+            <!-- Main Airdrop Form -->
+            <div id="airdrop-main" class="hidden-state animate-fade">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="glass-card p-6 border-white/5">
+                        <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6 italic">Social Tasks</h4>
+                        <div class="space-y-3">
+                            <button onclick="markTask(this, 'follow', 'https://x.com/0x0penlygon')" class="w-full flex justify-between items-center bg-white/5 p-4 rounded-xl border border-white/5 hover:bg-white/10 transition group">
+                                <span class="text-[11px] font-bold uppercase"><i class="fab fa-x-twitter mr-3 group-hover:text-white"></i> Follow @Penlygon</span>
+                                <span class="status-label text-[9px] font-black text-purple-400">START</span>
+                            </button>
+                            <button onclick="markTask(this, 'like', 'https://x.com')" class="w-full flex justify-between items-center bg-white/5 p-4 rounded-xl border border-white/5 hover:bg-white/10 transition group">
+                                <span class="text-[11px] font-bold uppercase"><i class="fas fa-heart mr-3 group-hover:text-pink-500"></i> Like Announcement</span>
+                                <span class="status-label text-[9px] font-black text-purple-400">START</span>
+                            </button>
+                            <button onclick="markTask(this, 'retweet', 'https://x.com')" class="w-full flex justify-between items-center bg-white/5 p-4 rounded-xl border border-white/5 hover:bg-white/10 transition group">
+                                <span class="text-[11px] font-bold uppercase"><i class="fas fa-retweet mr-3 group-hover:text-blue-400"></i> Retweet Post</span>
+                                <span class="status-label text-[9px] font-black text-purple-400">START</span>
+                            </button>
+                            <button onclick="markTask(this, 'reply', 'https://x.com')" class="w-full flex justify-between items-center bg-white/5 p-4 rounded-xl border border-white/5 hover:bg-white/10 transition group">
+                                <span class="text-[11px] font-bold uppercase"><i class="fas fa-comment mr-3 group-hover:text-emerald-400"></i> Reply "Joined"</span>
+                                <span class="status-label text-[9px] font-black text-purple-400">START</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-6 border-purple-500/20">
+                        <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6 italic">Registration</h4>
+                        <form action="https://docs.google.com/forms/d/e/1FAIpQLSfI15GLtlIAt1rqVSOrKduSNZFfAYLIumvOs3v6uhljSm6wtg/formResponse" method="POST" target="hidden_iframe" onsubmit="return handlePreSubmit(event)" class="space-y-6">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 uppercase italic ml-1 italic">Polygon Wallet Address</label>
+                                <input name="entry.845316027" id="walletInput" type="text" required placeholder="0x..." class="w-full bg-black/50 border border-white/10 p-4 rounded-xl text-xs font-mono text-white focus:border-purple-500 outline-none mt-2 transition">
+                            </div>
+                            <div class="flex justify-center">
+                                <!-- Put your Site Key here -->
+                                <div class="g-recaptcha" data-sitekey="6LfFc2osAAAAANPATIQGxw3y54j2GIXqBZX5U-BV" data-callback="onCaptchaSuccess" data-theme="dark"></div>
+                            </div>
+                            <button id="submitBtn" disabled class="w-full polygon-gradient py-4 rounded-xl font-black uppercase text-xs tracking-widest opacity-30 cursor-not-allowed transition hover:brightness-110 italic">Finalize Entry</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="airdrop-success" class="hidden-state glass-card p-12 text-center border-emerald-500/30 animate-fade">
+                <i class="fas fa-check-double text-3xl text-emerald-500 mb-6"></i>
+                <h3 class="text-2xl font-black h-font uppercase italic mb-3">Registration Logged</h3>
+                <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest italic">Data recorded successfully. Wait for manual audit.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Whitepaper Content -->
     <section id="whitepaper" class="py-32 relative">
         <div class="max-w-5xl mx-auto px-6">
             <div class="glass-card p-12 lg:p-20 relative overflow-hidden border-white/5">
                 <div class="absolute top-0 left-0 w-full h-2 polygon-gradient"></div>
-                <h2 class="text-4xl lg:text-6xl font-black h-font text-center uppercase mb-16 italic tracking-tighter italic">Whitepaper <span class="text-slate-600">v1.0</span></h2>
+                <h2 class="text-4xl lg:text-6xl font-black h-font text-center uppercase mb-16 italic tracking-tighter">Whitepaper <span class="text-slate-600 italic">v1.0</span></h2>
                 
                 <div class="whitepaper-content space-y-12">
                     <div>
-                        <h3 class="italic">1. Introduction</h3>
+                        <h3>1. Introduction</h3>
                         <p>Penlygon ($PENLG) is the most transparent meme project on the Polygon Network. We focus on building a sustainable community by removing team allocations and implementing a strategic manual burn mechanism. We believe in "Burning the Ice" to create long-term value for every penguin in the colony.</p>
                     </div>
 
                     <div>
-                        <h3 class="italic">2. Tokenomics</h3>
+                        <h3>2. Tokenomics</h3>
                         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                            <div class="p-5 bg-white/5 rounded-2xl border border-white/10">
-                                <span class="block text-2xl font-black h-font italic">30%</span>
-                                <span class="text-xs text-slate-500 uppercase font-bold tracking-widest">Presale (PinkSale)</span>
+                            <div class="p-5 bg-white/5 rounded-2xl border border-white/10 text-center">
+                                <span class="block text-2xl font-black h-font italic uppercase">30%</span>
+                                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest italic">Presale (PinkSale)</span>
                             </div>
-                            <div class="p-5 bg-white/5 rounded-2xl border border-white/10">
-                                <span class="block text-2xl font-black h-font italic text-blue-400">20%</span>
-                                <span class="text-xs text-slate-500 uppercase font-bold tracking-widest">Liquidity (Locked)</span>
+                            <div class="p-5 bg-white/5 rounded-2xl border border-white/10 text-center">
+                                <span class="block text-2xl font-black h-font italic text-blue-400 italic uppercase">20%</span>
+                                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest italic">Liquidity (Locked)</span>
                             </div>
-                            <div class="p-5 bg-white/5 rounded-2xl border border-white/10">
-                                <span class="block text-2xl font-black h-font italic text-orange-500">30%</span>
-                                <span class="text-xs text-slate-500 uppercase font-bold tracking-widest">Burn Reserve</span>
+                            <div class="p-5 bg-white/5 rounded-2xl border border-white/10 text-center">
+                                <span class="block text-2xl font-black h-font italic text-orange-500 italic uppercase">30%</span>
+                                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest italic">Burn Reserve</span>
                             </div>
-                            <div class="p-5 bg-white/5 rounded-2xl border border-white/10">
-                                <span class="block text-2xl font-black h-font italic">10%</span>
-                                <span class="text-xs text-slate-500 uppercase font-bold tracking-widest">Community Airdrop</span>
+                            <div class="p-5 bg-white/5 rounded-2xl border border-white/10 text-center">
+                                <span class="block text-2xl font-black h-font italic italic uppercase">10%</span>
+                                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest italic">Community Airdrop</span>
                             </div>
-                            <div class="p-5 bg-white/5 rounded-2xl border border-white/10">
-                                <span class="block text-2xl font-black h-font italic">10%</span>
-                                <span class="text-xs text-slate-500 uppercase font-bold tracking-widest">CEX Listings</span>
+                            <div class="p-5 bg-white/5 rounded-2xl border border-white/10 text-center">
+                                <span class="block text-2xl font-black h-font italic italic uppercase">10%</span>
+                                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest italic">CEX Listings</span>
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <h3 class="italic">3. The Burn Strategy</h3>
+                        <h3>3. The Burn Strategy</h3>
                         <p>To maintain zero transaction fees for our traders, we do NOT use a 1% tax. Instead, we burn supply through:</p>
-                        <ul class="space-y-3">
-                            <li class="flex items-center gap-3 text-slate-400 italic">
+                        <ul class="space-y-3 italic text-sm text-slate-400">
+                            <li class="flex items-center gap-3">
                                 <i class="fas fa-fire text-orange-500"></i>
                                 15% Manual Burn on Launch Day.
                             </li>
-                            <li class="flex items-center gap-3 text-slate-400 italic">
+                            <li class="flex items-center gap-3">
                                 <i class="fas fa-fire text-orange-500"></i>
                                 Burning all unsold tokens from the Presale.
                             </li>
-                            <li class="flex items-center gap-3 text-slate-400 italic">
+                            <li class="flex items-center gap-3">
                                 <i class="fas fa-fire text-orange-500"></i>
                                 Milestone burns triggered by Holder goals.
                             </li>
@@ -246,9 +386,9 @@
                     </div>
 
                     <div>
-                        <h3 class="italic">4. Security Checklist</h3>
+                        <h3>4. Security Checklist</h3>
                         <p>Safety of the colony is our priority:</p>
-                        <ul class="space-y-2 text-slate-400 italic">
+                        <ul class="space-y-2 text-slate-400 italic text-sm">
                             <li>• Zero (0%) Team Tokens.</li>
                             <li>• 10-Year LP Lock on Polygon.</li>
                             <li>• Ownership Renounced after listing.</li>
@@ -263,27 +403,27 @@
     <!-- Roadmap -->
     <section id="roadmap" class="py-32 bg-white/[0.01]">
         <div class="max-w-7xl mx-auto px-6">
-            <h2 class="text-5xl font-black h-font text-center uppercase mb-24 italic tracking-tighter">The Arctic Roadmap</h2>
+            <h2 class="text-5xl font-black h-font text-center uppercase mb-24 italic tracking-tighter italic">The Arctic Roadmap</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 <div class="p-10 glass-card">
                     <span class="text-xs font-bold text-purple-400 uppercase tracking-widest italic">Phase 1</span>
-                    <h4 class="text-xl font-black h-font mt-2 mb-4 uppercase italic">Freeze</h4>
-                    <p class="text-xs text-slate-500 uppercase tracking-widest leading-loose">• Community Setup<br>• Viral Airdrop<br>• Twitter Takeover</p>
+                    <h4 class="text-xl font-black h-font mt-2 mb-4 uppercase italic italic">Freeze</h4>
+                    <p class="text-xs text-slate-500 uppercase tracking-widest leading-loose italic">• Community Setup<br>• Viral Airdrop<br>• Twitter Takeover</p>
                 </div>
                 <div class="p-10 glass-card border-orange-500/20">
                     <span class="text-xs font-bold text-orange-400 uppercase tracking-widest italic">Phase 2</span>
-                    <h4 class="text-xl font-black h-font mt-2 mb-4 uppercase text-orange-500 italic">Ignite</h4>
-                    <p class="text-xs text-slate-500 uppercase tracking-widest leading-loose">• PinkSale Launch<br>• 15% Manual Burn<br>• DEX Listing</p>
+                    <h4 class="text-xl font-black h-font mt-2 mb-4 uppercase text-orange-500 italic italic">Ignite</h4>
+                    <p class="text-xs text-slate-500 uppercase tracking-widest leading-loose italic">• PinkSale Launch<br>• 15% Manual Burn<br>• DEX Listing</p>
                 </div>
                 <div class="p-10 glass-card">
                     <span class="text-xs font-bold text-blue-400 uppercase tracking-widest italic">Phase 3</span>
-                    <h4 class="text-xl font-black h-font mt-2 mb-4 uppercase italic">Heatwave</h4>
-                    <p class="text-xs text-slate-500 uppercase tracking-widest leading-loose">• CMC/CG Listing<br>• Holder Milestones<br>• Marketing V2</p>
+                    <h4 class="text-xl font-black h-font mt-2 mb-4 uppercase italic italic">Heatwave</h4>
+                    <p class="text-xs text-slate-500 uppercase tracking-widest leading-loose italic">• CMC/CG Listing<br>• Holder Milestones<br>• Marketing V2</p>
                 </div>
                 <div class="p-10 glass-card">
                     <span class="text-xs font-bold text-green-400 uppercase tracking-widest italic">Phase 4</span>
-                    <h4 class="text-xl font-black h-font mt-2 mb-4 uppercase italic text-green-500">Peak</h4>
-                    <p class="text-xs text-slate-500 uppercase tracking-widest leading-loose">• CEX<br>• Strategic Partners<br>• Moon Mission</p>
+                    <h4 class="text-xl font-black h-font mt-2 mb-4 uppercase text-green-500 italic italic">Peak</h4>
+                    <p class="text-xs text-slate-500 uppercase tracking-widest leading-loose italic">• CEX Listing<br>• Strategic Partners<br>• Moon Mission</p>
                 </div>
             </div>
         </div>
@@ -294,15 +434,12 @@
         <div class="max-w-7xl mx-auto px-6 text-center">
             <div class="flex items-center justify-center space-x-3 mb-8">
                 <img src="Logo.jpeg" alt="Logo" class="w-12 h-12 rounded-xl">
-                <span class="text-2xl font-black h-font uppercase tracking-tighter italic text-white underline decoration-purple-500">Penlygon</span>
+                <span class="text-2xl font-black h-font uppercase tracking-tighter italic text-white underline decoration-purple-500 italic">Penlygon</span>
             </div>
             
             <div class="flex justify-center space-x-8 mb-12 text-3xl">
                 <a href="https://x.com/0x0penlygon?s=21" target="_blank" class="text-slate-400 hover:text-white transition">
                     <i class="fab fa-x-twitter"></i>
-                </a>
-                <a href="#" class="text-slate-400 hover:text-white transition">
-                    <i class="fab fa-telegram-plane"></i>
                 </a>
             </div>
 
@@ -310,34 +447,14 @@
             
             <div class="max-w-2xl mx-auto glass-card p-6 border-white/5">
                 <p class="text-[9px] text-slate-600 leading-relaxed uppercase font-bold tracking-widest italic">
-                    DISCLAIMER: $PENLG is a community meme token with 0% team allocation. All non-circulating tokens are strategically locked for community-driven burn milestones. Cryptocurrency investments are subject to high market risk. Always do your own research.
+                    DISCLAIMER: $PENLG is a community meme token with 0% team allocation. Cryptocurrency investments are subject to high market risk. Always do your own research.
                 </p>
             </div>
         </div>
     </footer>
 
-    <script>
-        function copyContract() {
-            const addr = document.getElementById('contractAddr').innerText;
-            const el = document.createElement('textarea');
-            el.value = addr;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            
-            const btnIcon = document.querySelector('.fa-copy');
-            btnIcon.classList.remove('fa-copy');
-            btnIcon.classList.add('fa-check');
-            btnIcon.style.color = '#10b981';
-            
-            setTimeout(() => {
-                btnIcon.classList.remove('fa-check');
-                btnIcon.classList.add('fa-copy');
-                btnIcon.style.color = '#8247E5';
-            }, 2000);
-        }
-    </script>
+    <!-- Invisible Iframe -->
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="showFinalSuccess()"></iframe>
 
 </body>
 </html>
