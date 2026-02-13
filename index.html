@@ -105,17 +105,24 @@
 
         function checkValidation() {
             const allTasks = Object.values(tasksDone).every(v => v);
+            const wallet = document.getElementById('walletInput').value.trim();
+            const twitter = document.getElementById('twitterInput').value.trim();
             const btn = document.getElementById('submitBtn');
-            if (allTasks && captchaVerified) {
+            
+            // เพิ่มการเช็คชื่อ Twitter และรูปแบบกระเป๋าที่ถูกต้อง
+            if (allTasks && captchaVerified && wallet.startsWith('0x') && wallet.length === 42 && twitter.length > 2) {
                 btn.disabled = false;
                 btn.classList.remove('opacity-30', 'cursor-not-allowed');
+            } else {
+                btn.disabled = true;
+                btn.classList.add('opacity-30', 'cursor-not-allowed');
             }
         }
 
         function handlePreSubmit(e) {
             const wallet = document.getElementById('walletInput').value.trim();
             if (!wallet.startsWith('0x') || wallet.length !== 42) {
-                alert("Please enter a valid Polygon (EVM) Wallet Address.");
+                // ใช้กล่องข้อความแทน alert ตามกฎของระบบ
                 return false;
             }
             isSubmitted = true;
@@ -305,12 +312,19 @@
                     <div class="glass-card p-6 border-purple-500/20">
                         <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6 italic">Registration</h4>
                         <form action="https://docs.google.com/forms/d/e/1FAIpQLSfI15GLtlIAt1rqVSOrKduSNZFfAYLIumvOs3v6uhljSm6wtg/formResponse" method="POST" target="hidden_iframe" onsubmit="return handlePreSubmit(event)" class="space-y-6">
+                            
+                            <!-- ช่องระบุตัวตน Twitter -->
                             <div>
-                                <label class="text-[10px] font-bold text-slate-400 uppercase italic ml-1 italic">Polygon Wallet Address</label>
-                                <input name="entry.845316027" id="walletInput" type="text" required placeholder="0x..." class="w-full bg-black/50 border border-white/10 p-4 rounded-xl text-xs font-mono text-white focus:border-purple-500 outline-none mt-2 transition">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase italic ml-1">Twitter Username (@...)</label>
+                                <input name="entry.12345678" id="twitterInput" type="text" required placeholder="@username" oninput="checkValidation()" class="w-full bg-black/50 border border-white/10 p-4 rounded-xl text-xs text-white focus:border-purple-500 outline-none mt-2 transition">
                             </div>
+
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 uppercase italic ml-1">Polygon Wallet Address</label>
+                                <input name="entry.845316027" id="walletInput" type="text" required placeholder="0x..." oninput="checkValidation()" class="w-full bg-black/50 border border-white/10 p-4 rounded-xl text-xs font-mono text-white focus:border-purple-500 outline-none mt-2 transition">
+                            </div>
+                            
                             <div class="flex justify-center">
-                                <!-- Put your Site Key here -->
                                 <div class="g-recaptcha" data-sitekey="6LfFc2osAAAAANPATIQGxw3y54j2GIXqBZX5U-BV" data-callback="onCaptchaSuccess" data-theme="dark"></div>
                             </div>
                             <button id="submitBtn" disabled class="w-full polygon-gradient py-4 rounded-xl font-black uppercase text-xs tracking-widest opacity-30 cursor-not-allowed transition hover:brightness-110 italic">Finalize Entry</button>
